@@ -1,0 +1,76 @@
+version: 1
+
+datadog:
+  site: datadoghq.com
+  api_key: ${DD_API_KEY}
+  app_key: ${DD_APP_KEY}
+  timeout_seconds: 30
+  max_retries: 3
+
+audit:
+  lookback_days: 30
+  timezone: UTC
+  dry_run: false
+
+discovery:
+  environment_keys:
+    - env
+    - cluster_name
+    - namespace
+  required_tags:
+    - env
+    - service
+  optional_tags:
+    - team
+    - region
+  include:
+    env: [prod, staging]
+  exclude:
+    namespace: [kube-system, datadog, istio-system]
+
+metrics:
+  collect:
+    - name: cpu_usage_p95
+      query: "avg:kubernetes.cpu.usage.total{env:$env,cluster_name:$cluster_name,namespace:$namespace}"
+      source_type: timeseries
+      dimension: compute
+      aggregator: p95
+      required: true
+    - name: memory_usage_p95
+      query: "avg:kubernetes.memory.usage{env:$env,cluster_name:$cluster_name,namespace:$namespace}"
+      source_type: timeseries
+      dimension: compute
+      aggregator: p95
+    - name: running_containers_avg
+      query: "avg:kubernetes.containers.running{env:$env,cluster_name:$cluster_name,namespace:$namespace}"
+      source_type: timeseries
+      dimension: complexity
+      aggregator: avg
+    - name: request_rate_p95
+      query: "sum:trace.http.request.hits{env:$env,service:$service}.rollup(sum, 300)"
+      source_type: timeseries
+      dimension: traffic
+      aggregator: p95
+    - name: indexed_logs_avg
+      query: "avg:datadog.estimated_usage.logs.ingested_events{env:$env}"
+      source_type: timeseries
+      dimension: data
+      aggregator: avg
+
+classification:
+  strategy: weighted_score
+  weights:
+    compute: 0.35
+    traffic: 0.25
+    data: 0.20
+    complexity: 0.20
+  thresholds:
+    small: [0, 25]
+    medium: [25, 50]
+    large: [50, 75]
+    xlarge: [75, 100]
+
+output:
+  formats: [json, csv, markdown]
+  directory: ./output
+  include_reasons: true
