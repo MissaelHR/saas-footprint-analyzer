@@ -1,0 +1,70 @@
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "saas-footprint-analyzer"
+version = "0.1.0"
+description = "Datadog-only CLI for discovering and sizing logical cloud environments."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Missael Hernández Rosado" }
+]
+keywords = ["datadog", "cli", "cloud", "sizing", "audit", "saas"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: System :: Monitoring",
+  "Topic :: Utilities"
+]
+dependencies = [
+  "httpx>=0.27.0,<1.0.0",
+  "pydantic>=2.8.0,<3.0.0",
+  "pyyaml>=6.0.1,<7.0.0",
+  "rich>=13.7.1,<14.0.0",
+  "tenacity>=9.0.0,<10.0.0",
+  "typer>=0.12.3,<1.0.0"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3.0,<9.0.0",
+  "ruff>=0.6.0,<1.0.0"
+]
+
+[project.scripts]
+saas-footprint-analyzer = "saas_footprint_analyzer.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/saas_footprint_analyzer"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+  "E",
+  "F",
+  "I",
+  "B",
+  "UP",
+  "N",
+  "SIM",
+  "C4",
+  "RUF"
+]
+ignore = ["UP017"]
+
+[tool.ruff.format]
+quote-style = "double"
